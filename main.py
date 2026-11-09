@@ -1,4 +1,4 @@
-def show menu():
+def show_menu():
     """메뉴 화면을 출력한다."""
     print("=" * 40)
     print("        🎯 나만의 퀴즈 게임 🎯")
@@ -53,9 +53,9 @@ def main():
             # 여기에 점수 확인 기능을 구현
         elif choice == 5:
            print("👋 게임을 종료합니다. 다음에 또 만나요!")
-            break
+
 if __name__ == "__main__":
-    try
+    try:
         main()
     except (KeyboardInterrupt, EOFError):
         print("\n👋 게임을 종료합니다. 다음에 또 만나요!")
