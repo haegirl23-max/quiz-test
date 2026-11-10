@@ -1,8 +1,12 @@
 import json
+import os
 import random
+import shutil
 from datetime import datetime
 
-STATE_FILE = "state.json"   # 데이터를 저장할 파일 이름 (프로젝트 루트)
+STATE_FILE = "state.json"            # 데이터를 저장할 파일 이름 (프로젝트 루트)
+BACKUP_FILE = STATE_FILE + ".bak"    # 저장 직전 상태를 보관하는 백업 파일
+TEMP_FILE = STATE_FILE + ".tmp"      # 저장 도중 끊겨도 원본이 깨지지 않게 먼저 쓰는 임시 파일
 HINT_PENALTY = 0.5          # 힌트를 보고 맞히면 1문제의 절반(0.5)만 인정
 
 
@@ -345,25 +349,33 @@ class QuizGame:
         }
 
         try:
-            with open(STATE_FILE, "w", encoding="utf-8") as f:
+            # ① 지금 파일을 백업으로 복사 (한 단계 이전 상태 보관)
+            if os.path.exists(STATE_FILE):
+                shutil.copyfile(STATE_FILE, BACKUP_FILE)
+            # ② 임시 파일에 먼저 끝까지 쓰고
+            with open(TEMP_FILE, "w", encoding="utf-8") as f:
                 json.dump(data, f, ensure_ascii=False, indent=2)
+            # ③ 다 쓴 뒤에 한 번에 바꿔치기 (중간에 끊겨도 state.json은 온전함)
+            os.replace(TEMP_FILE, STATE_FILE)
         except OSError:
             print("⚠️ 데이터를 파일에 저장하지 못했습니다.")
 
+    def read_state(self, path):
+        """path의 JSON 파일을 읽어 (퀴즈 목록, 최고 점수, 기록)을 돌려준다. 문제가 있으면 예외가 그대로 올라간다."""
+        with open(path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+
+        quizzes = []
+        for item in data["quizzes"]:
+            # 힌트가 없던 예전 파일도 읽을 수 있도록 get()으로 기본값 "" 사용
+            quizzes.append(Quiz(item["question"], item["choices"], item["answer"], item.get("hint", "")))
+
+        return quizzes, data["best_score"], data.get("history", [])
+
     def load(self):
-        """state.json에서 퀴즈 목록, 최고 점수, 게임 기록을 불러온다."""
+        """state.json을 불러온다. 손상됐으면 백업(state.json.bak)으로, 백업도 없으면 기본 퀴즈로 복구한다."""
         try:
-            with open(STATE_FILE, "r", encoding="utf-8") as f:
-                data = json.load(f)
-
-            quizzes = []
-            for item in data["quizzes"]:
-                # 힌트가 없던 예전 파일도 읽을 수 있도록 get()으로 기본값 "" 사용
-                quizzes.append(Quiz(item["question"], item["choices"], item["answer"], item.get("hint", "")))
-
-            self.quizzes = quizzes
-            self.best_score = data["best_score"]
-            self.history = data.get("history", [])
+            self.quizzes, self.best_score, self.history = self.read_state(STATE_FILE)
 
             if self.best_score is None:
                 score_text = "기록 없음"
@@ -374,18 +386,21 @@ class QuizGame:
         except FileNotFoundError:
             print(f"📂 저장된 파일이 없어 기본 퀴즈 {len(self.quizzes)}개로 시작합니다.")
 
-        except (ValueError, KeyError, TypeError):
-            print("⚠️ 데이터 파일이 손상되어 기본 퀴즈로 복구합니다.")
+        except (ValueError, KeyError, TypeError, OSError):
+            print("⚠️ 데이터 파일이 손상되었거나 읽을 수 없습니다.")
+            self.restore_from_backup()
+
+    def restore_from_backup(self):
+        """백업 파일로 복구를 시도하고, 실패하면 기본 퀴즈로 초기화한다."""
+        try:
+            self.quizzes, self.best_score, self.history = self.read_state(BACKUP_FILE)
+            shutil.copyfile(BACKUP_FILE, STATE_FILE)
+            print(f"♻️ 백업 파일(state.json.bak)로 복구했습니다. (퀴즈 {len(self.quizzes)}개)")
+        except (FileNotFoundError, ValueError, KeyError, TypeError, OSError):
             self.quizzes = get_default_quizzes()
             self.best_score = None
             self.history = []
-
-        except OSError:
-            print("⚠️ 데이터 파일을 읽지 못해 기본 퀴즈로 시작합니다.")
-            self.quizzes = get_default_quizzes()
-            self.best_score = None
-            self.history = []
-
+            print("⚠️ 사용할 수 있는 백업이 없어 기본 퀴즈로 복구합니다.")
 
 def main():
     """게임 객체를 만들고 실행한다. 중간에 강제 종료되면 저장 후 종료한다."""

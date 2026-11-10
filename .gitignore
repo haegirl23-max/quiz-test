@@ -2,3 +2,5 @@ __pycache__/
 *.pyc
 .vscode/
 state.json
+state.json.bak
+state.json.tmp
