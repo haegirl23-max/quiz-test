@@ -107,3 +107,6 @@ quiz-test/
 | `quizzes[].choices` | list (str 4개) | 선택지 |
 | `quizzes[].answer` | int (1~4) | 정답 번호 |
 | `best_score` | int 또는 null | 최고 점수 (100점 만점, 아직 풀지 않았으면 `null`) |
+
+## Git 실습 기록
+- clone한 저장소에서 README를 수정하고 push한 뒤, 원래 작업 폴더에서 pull로 받아왔습니다.
