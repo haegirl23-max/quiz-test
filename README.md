@@ -66,7 +66,10 @@ quiz-test/
 │       ├── play.png
 │       ├── add_quiz.png
 │       ├── quiz_list.png
-│       └── score.png
+│       ├── score.png
+│       ├── git_clone.png
+│       ├── git_push.png
+│       └── git_pull.png
 └── state.json     # 실행 중 자동 생성되는 데이터 파일 (Git에는 올리지 않음)
 ```
 
@@ -109,4 +112,18 @@ quiz-test/
 | `best_score` | int 또는 null | 최고 점수 (100점 만점, 아직 풀지 않았으면 `null`) |
 
 ## Git 실습 기록
-- clone한 저장소에서 README를 수정하고 push한 뒤, 원래 작업 폴더에서 pull로 받아왔습니다.
+### clone / pull 실습
+GitHub 저장소를 별도 폴더(`quiz-clone`)에 복제한 뒤, 복제한 저장소에서 README를 수정해 `push`하고,
+원래 작업 폴더(`quiz-game`)에서 `pull`로 변경사항을 받아왔습니다.
+
+**1. `git clone`: 별도 폴더(`quiz-clone`)에 저장소 복제**
+
+![git clone 실행 화면](docs/screenshots/git_clone.png)
+
+**2. 복제한 저장소에서 README 수정 후 `commit`, `push`**
+
+![quiz-clone에서 commit, push 실행 화면](docs/screenshots/git_push.png)
+
+**3. `git pull`: 원래 작업 폴더(`quiz-game`)에서 변경사항 받아오기**
+
+![git pull 실행 화면](docs/screenshots/git_pull.png)
