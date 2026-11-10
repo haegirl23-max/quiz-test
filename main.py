@@ -80,20 +80,6 @@ def get_default_quizzes():
     return quizzes
 
 
-def show_menu():
-    """메뉴 화면을 출력한다."""
-    print("=" * 40)
-    print("        🎯 나만의 퀴즈 게임 🎯")
-    print("=" * 40)
-    print("1. 퀴즈 풀기")
-    print("2. 퀴즈 추가")
-    print("3. 퀴즈 목록")
-    print("4. 점수 확인")
-    print("5. 종료")
-    print("=" * 40)
-
-
-
 def get_number(prompt, min_value, max_value):
     """min_value~max_value 사이의 숫자를 받을 때까지 계속 물어본다."""
     while True:
@@ -127,102 +113,123 @@ def get_text(prompt):
 
         return text
 
-def play_quiz(quizzes):
-    """퀴즈를 차례로 출제하고, 맞힌 개수를 돌려준다."""
-    if len(quizzes) == 0:
-        print("⚠️ 등록된 퀴즈가 없습니다. 먼저 퀴즈를 추가해 주세요.")
-        return None
+class QuizGame:
+    """ 퀴즈 게임 전체(퀴즈 목록, 최고 점수, 메뉴 흐름)를 관리하는 클래스 """
 
-    total = len(quizzes)
-    print(f"\n📝 퀴즈를 시작합니다! (총 {total}문제)")
-    correct_count = 0
+    def __init__(self):
+        self.quizzes = get_default_quizzes()   # 퀴즈 목록
+        self.best_score = None                 # 최고 점수
 
-    for number, quiz in enumerate(quizzes, start=1):
-        quiz.display(number)
-        user_answer = get_number("정답 입력: ", 1, 4)
+    def show_menu(self):
+        print("=" * 40)
+        print("        🎯 나만의 퀴즈 게임 🎯")
+        print("=" * 40)
+        print("1. 퀴즈 풀기")
+        print("2. 퀴즈 추가")
+        print("3. 퀴즈 목록")
+        print("4. 점수 확인")
+        print("5. 종료")
+        print("=" * 40)
 
-        if quiz.is_correct(user_answer):
-            print("✅ 정답입니다!")
-            correct_count += 1
-        else:
-            print(f"❌ 오답입니다. 정답은 {quiz.answer}번입니다.")
+    def play_quiz(self):
+        """퀴즈를 풀고 점수를 계산한다."""
+        if len(self.quizzes) == 0:
+            print("⚠️ 퀴즈가 없습니다. 먼저 퀴즈를 추가해주세요.")
+            return
 
-    score = int(correct_count / total * 100)
-    print("=" * 40)
-    print(f"🏆 결과: {total}문제 중 {correct_count}문제 정답! ({score}점)")
-    print("=" * 40)
-    return score
+        total = len(self.quizzes)
+        print(f"🎮 퀴즈를 시작합니다! 총 {total}문제")
+        correct_count = 0
 
+        for number, quiz in enumerate(self.quizzes, start=1):
+            quiz.display(number)
+            user_answer = get_number("정답 번호를 입력하세요 (1~4): ", 1, 4)
 
-def add_quiz(quizzes):
-    """문제, 선택지, 정답을 입력받아 새로운 퀴즈를 추가한다."""
-    print("\n📝 새로운 퀴즈를 추가합니다.")
-    question = get_text("문제를 입력하세요: ")
-                        
-    choices = []
-    for i in range(4):
-        choice = get_text(f"선택지 {i + 1}: ")
-        choices.append(choice)
-    
-    answer = get_number("정답 번호 (1~4): ", 1, 4)
+            if quiz.is_correct(user_answer):
+                print("✅ 정답입니다!\n")
+                correct_count += 1
+            else:
+                print(f"❌ 오답입니다. 정답은 {quiz.answer}번입니다.\n")
 
-    new_quiz = Quiz(question, choices, answer)
-    quizzes.append(new_quiz)
-    print("✅ 퀴즈가 추가되었습니다.")
+        score = int(correct_count / total * 100)
+        print("=" * 40)
+        print(f"🏆 결과: {total}문제 중 {correct_count}문제 정답! ({score}점)")
+        print("=" * 40)
+                            
+        if self.best_score is None or score > self.best_score:
+            self.best_score = score
+            print("🎉 새로운 최고 점수입니다!")
 
+    def add_quiz(self):
+        """문제, 선택지 4개, 정답을 입력받아 새 퀴즈를 추가한다."""
+        print("📝 새 퀴즈를 추가합니다.")
+        question = get_text("문제를 입력하세요: ")
 
-def show_quiz_list(quizzes):
-    """등록된 퀴즈 목록을 출력한다."""
-    if len(quizzes) == 0:
-        print("⚠️ 등록된 퀴즈가 없습니다. 먼저 퀴즈를 추가해 주세요.")
-        return
+        choices = []
+        for i in range(4):
+            choice = get_text(f"선택지 {i + 1}: ")
+            choices.append(choice)
+        
+        answer = get_number("정답 번호 (1~4): ", 1, 4)
 
-    print(f"\n📋 등록된 퀴즈 목록(총 {len(quizzes)}개):")
-    print("-" * 40)
-    for number, quiz in enumerate(quizzes, start=1):
-        print(f"{number}. {quiz.question}")
-    print("-" * 40)
-
-
-def show_best_score(best_score):
-    """최고 점수를 출력한다."""
-    if best_score is None:
-        print("\n🏆 최고 점수: 기록이 없습니다. 먼저 퀴즈를 풀어주세요.")
-        return
-    
-    print(f"\n🏆 최고 점수: {best_score}점")
+        new_quiz = Quiz(question, choices, answer)
+        self.quizzes.append(new_quiz)
+        print("✅ 새 퀴즈가 추가되었습니다!")
 
 
-def main():
-    """프로그램 전체 흐름: 메뉴 → 선택 → 실행을 반복한다."""
-    quizzes = get_default_quizzes()
-    best_score = None
-    print(f"📂 기본 퀴즈 {len(quizzes)}개를 불러왔습니다.")
+    def show_quiz_list(self):
+        """등록된 퀴즈 목록을 출력한다."""
+        if len(self.quizzes) == 0:
+            print("⚠️ 퀴즈가 없습니다. 먼저 퀴즈를 추가해주세요.")
+            return
 
-    while True:
-        show_menu()
-        choice = get_number("선택: ", 1, 5)
+        print(f"\n📚 등록된 퀴즈 목록:(총 {len(self.quizzes)}개):")
+        print("-" * 40)
+        for number, quiz in enumerate(self.quizzes, start=1):
+            print(f"{number}. {quiz.question}")
+        print("-" * 40)
 
-        if choice == 1:
-           score = play_quiz(quizzes)
-           if score is not None:
-                if best_score is None or score > best_score:
-                    best_score = score
-                    print("🎉 새로운 최고 점수입니다!")
-                
-        elif choice == 2:
-            add_quiz(quizzes)
-        elif choice == 3:
-            show_quiz_list(quizzes)
-        elif choice == 4:
-            show_best_score(best_score)
-        elif choice == 5:
-            print("👋 게임을 종료합니다. 다음에 또 만나요!")
-            break
+        print()
+
+
+    def show_best_score(self):
+        """최고 점수를 출력한다."""
+        if self.best_score is None:
+            print("⚠️ 아직 퀴즈를 풀지 않았습니다. 먼저 퀴즈를 풀어주세요.")
+            return
+        
+        print(f"\n🏆 최고 점수: {self.best_score}점")
+
+    def run(self):
+        """메뉴를 반복해서 보여주고 사용자의 선택에 따라 기능을 실행한다."""
+        print(f"📂 기본 퀴즈 {len(self.quizzes)}개를 불러왔습니다.")
+
+        while True:
+            self.show_menu()
+            choice = get_number("원하는 메뉴 번호를 입력하세요 (1~5): ", 1, 5)
+
+            if choice == 1:
+                self.play_quiz()
+            elif choice == 2:
+                self.add_quiz()
+            elif choice == 3:
+                self.show_quiz_list()
+            elif choice == 4:
+                self.show_best_score()
+            elif choice == 5:
+                print("👋 게임을 종료합니다. 다음에 또 만나요!")
+                break
+
+
+    def main():
+        """ 게임 객체를 만들고 실행한다."""
+        game = QuizGame()
+        game.run()
 
 
 if __name__ == "__main__":
     try:
-        main()
+        game = QuizGame()
+        game.play()
     except (KeyboardInterrupt, EOFError):
         print("\n👋 게임을 종료합니다. 다음에 또 만나요!")
