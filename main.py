@@ -25,7 +25,7 @@ def get_default_quizzes():
     """처음 실행할 때 사용할 기본 퀴즈 목록을 만든다."""
     quizzes = [
         Quiz(
-    "변수에 대한 설명으로 옳은 것은?",
+             "변수에 대한 설명으로 옳은 것은?",
             ["값을 저장해 두고 이름으로 다시 꺼내 쓰는 상자",
              "한 번 저장하면 절대 바꿀 수 없는 값",
              "숫자만 저장할 수 있는 공간",
@@ -115,26 +115,54 @@ def get_number(prompt, min_value, max_value):
 
         return number
 
+def play_quiz(quizzes):
+    """퀴즈를 차례로 출제하고, 맞힌 개수를 돌려준다."""
+    if len(quizzes) == 0:
+        print("⚠️ 등록된 퀴즈가 없습니다. 먼저 퀴즈를 추가해 주세요.")
+        return None
+
+    total = len(quizzes)
+    print(f"\n📝 퀴즈를 시작합니다! (총 {total}문제)")
+    correct_count = 0
+
+    for number, quiz in enumerate(quizzes, start=1):
+        quiz.display(number)
+        user_answer = get_number("정답 입력: ", 1, 4)
+
+        if quiz.is_correct(user_answer):
+            print("✅ 정답입니다!")
+            correct_count += 1
+        else:
+            print(f"❌ 오답입니다. 정답은 {quiz.answer}번입니다.")
+
+    score = int(correct_count / total * 100)
+    print("=" * 40)
+    print(f"🏆 결과: {total}문제 중 {correct_count}문제 정답! ({score}점)")
+    print("=" * 40)
+    return correct_count
+
+
 def main():
     """프로그램 전체 흐름: 메뉴 → 선택 → 실행을 반복한다."""
+    quizzes = get_default_quizzes()
+    print(f"📂 기본 퀴즈 {len(quizzes)}개를 불러왔습니다.")
+
     while True:
         show_menu()
         choice = get_number("선택: ", 1, 5)
 
         if choice == 1:
-            print("📝 퀴즈 풀기 (준비 중)")
-            # 여기에 퀴즈 풀기 기능을 구현
+            play_quiz(quizzes)
         elif choice == 2:
             print("📌 퀴즈 추가 (준비 중)")
-            # 여기에 퀴즈 추가 기능을 구현
         elif choice == 3:
             print("📋 퀴즈 목록 (준비 중)")
-            # 여기에 퀴즈 목록 기능을 구현
         elif choice == 4:
             print("🏆 점수 확인 (준비 중)")
-            # 여기에 점수 확인 기능을 구현
         elif choice == 5:
-           print("👋 게임을 종료합니다. 다음에 또 만나요!")
+            print("👋 게임을 종료합니다. 다음에 또 만나요!")
+            break
+
 
 if __name__ == "__main__":
     try:
