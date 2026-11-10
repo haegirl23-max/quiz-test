@@ -1,3 +1,8 @@
+import json
+
+STATE_FILE = "state.json"   # 데이터를 저장할 파일 이름 (프로젝트 루트)
+
+
 class Quiz:
     """퀴즈 한 문제를 표현하는 클래스"""
 
@@ -19,6 +24,14 @@ class Quiz:
     def is_correct(self, user_answer):
         """사용자가 입력한 답이 정답이면 True, 아니면 False를 반환한다."""
         return user_answer == self.answer
+
+    def to_dict(self):
+        """JSON으로 저장할 수 있도록 dict 형태로 바꿔서 돌려준다."""
+        return {
+            "question": self.question,
+            "choices": self.choices,
+            "answer": self.answer,
+        }
 
 
 def get_default_quizzes():
@@ -119,6 +132,7 @@ class QuizGame:
     def __init__(self):
         self.quizzes = get_default_quizzes()   # 퀴즈 목록
         self.best_score = None                 # 최고 점수
+        self.load()                            # 저장된 데이터가 있으면 불러오기
 
     def show_menu(self):
         print("=" * 40)
@@ -159,6 +173,7 @@ class QuizGame:
         if self.best_score is None or score > self.best_score:
             self.best_score = score
             print("🎉 새로운 최고 점수입니다!")
+            self.save()
 
     def add_quiz(self):
         """문제, 선택지 4개, 정답을 입력받아 새 퀴즈를 추가한다."""
@@ -175,6 +190,7 @@ class QuizGame:
         new_quiz = Quiz(question, choices, answer)
         self.quizzes.append(new_quiz)
         print("✅ 새 퀴즈가 추가되었습니다!")
+        self.save()
 
 
     def show_quiz_list(self):
@@ -202,8 +218,6 @@ class QuizGame:
 
     def run(self):
         """메뉴를 반복해서 보여주고 사용자의 선택에 따라 기능을 실행한다."""
-        print(f"📂 기본 퀴즈 {len(self.quizzes)}개를 불러왔습니다.")
-
         while True:
             self.show_menu()
             choice = get_number("원하는 메뉴 번호를 입력하세요 (1~5): ", 1, 5)
@@ -217,19 +231,69 @@ class QuizGame:
             elif choice == 4:
                 self.show_best_score()
             elif choice == 5:
+                self.save()
                 print("👋 게임을 종료합니다. 다음에 또 만나요!")
                 break
 
+    def save(self):
+        """퀴즈 목록과 최고 점수를 state.json에 저장한다."""
+        quiz_list = []
+        for quiz in self.quizzes:
+            quiz_list.append(quiz.to_dict())
 
-    def main():
-        """ 게임 객체를 만들고 실행한다."""
-        game = QuizGame()
+        data = {
+            "quizzes": quiz_list,
+            "best_score": self.best_score,
+        }
+
+        try:
+            with open(STATE_FILE, "w", encoding="utf-8") as f:
+                json.dump(data, f, ensure_ascii=False, indent=2)
+        except OSError:
+            print("⚠️ 데이터를 파일에 저장하지 못했습니다.")
+
+    def load(self):
+        """state.json에서 퀴즈 목록과 최고 점수를 불러온다."""
+        try:
+            with open(STATE_FILE, "r", encoding="utf-8") as f:
+                data = json.load(f)
+
+            quizzes = []
+            for item in data["quizzes"]:
+                quizzes.append(Quiz(item["question"], item["choices"], item["answer"]))
+
+            self.quizzes = quizzes
+            self.best_score = data["best_score"]
+
+            if self.best_score is None:
+                score_text = "기록 없음"
+            else:
+                score_text = f"{self.best_score}점"
+            print(f"📂 저장된 데이터를 불러왔습니다. (퀴즈 {len(self.quizzes)}개, 최고점수 {score_text})")
+
+        except FileNotFoundError:
+            print(f"📂 저장된 파일이 없어 기본 퀴즈 {len(self.quizzes)}개로 시작합니다.")
+
+        except (ValueError, KeyError, TypeError):
+            print("⚠️ 데이터 파일이 손상되어 기본 퀴즈로 복구합니다.")
+            self.quizzes = get_default_quizzes()
+            self.best_score = None
+
+        except OSError:
+            print("⚠️ 데이터 파일을 읽지 못해 기본 퀴즈로 시작합니다.")
+            self.quizzes = get_default_quizzes()
+            self.best_score = None
+
+
+def main():
+    """게임 객체를 만들고 실행한다. 중간에 강제 종료되면 저장 후 종료한다."""
+    game = QuizGame()
+    try:
         game.run()
+    except (KeyboardInterrupt, EOFError):
+        print("\n⚠️ 입력이 중단되었습니다. 데이터를 저장하고 종료합니다.")
+        game.save()
 
 
 if __name__ == "__main__":
-    try:
-        game = QuizGame()
-        game.play()
-    except (KeyboardInterrupt, EOFError):
-        print("\n👋 게임을 종료합니다. 다음에 또 만나요!")
+    main()
