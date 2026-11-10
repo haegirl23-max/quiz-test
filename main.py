@@ -115,6 +115,18 @@ def get_number(prompt, min_value, max_value):
 
         return number
 
+
+def get_text(prompt):
+    """빈 값이 아닌 글자를 받을 때까지 계속 물어본다."""
+    while True:
+        text = input(prompt).strip()
+
+        if text == "":
+            print("⚠️입력값이 없습니다. 다시 입력해주세요.")
+            continue
+
+        return text
+
 def play_quiz(quizzes):
     """퀴즈를 차례로 출제하고, 맞힌 개수를 돌려준다."""
     if len(quizzes) == 0:
@@ -142,6 +154,22 @@ def play_quiz(quizzes):
     return correct_count
 
 
+def add_quiz(quizzes):
+    """문제, 선택지, 정답을 입력받아 새로운 퀴즈를 추가한다."""
+    print("\n📝 새로운 퀴즈를 추가합니다.")
+    question = get_text("문제를 입력하세요: ")
+                        
+    choices = []
+    for i in range(4):
+        choice = get_text(f"선택지 {i + 1}: ")
+        choices.append(choice)
+    
+    answer = get_number("정답 번호 (1~4): ", 1, 4)
+
+    new_quiz = Quiz(question, choices, answer)
+    quizzes.append(new_quiz)
+    print("✅ 퀴즈가 추가되었습니다.")
+
 def main():
     """프로그램 전체 흐름: 메뉴 → 선택 → 실행을 반복한다."""
     quizzes = get_default_quizzes()
@@ -154,7 +182,7 @@ def main():
         if choice == 1:
             play_quiz(quizzes)
         elif choice == 2:
-            print("📌 퀴즈 추가 (준비 중)")
+            add_quiz(quizzes)
         elif choice == 3:
             print("📋 퀴즈 목록 (준비 중)")
         elif choice == 4:
