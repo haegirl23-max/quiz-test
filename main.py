@@ -151,7 +151,7 @@ def play_quiz(quizzes):
     print("=" * 40)
     print(f"🏆 결과: {total}문제 중 {correct_count}문제 정답! ({score}점)")
     print("=" * 40)
-    return correct_count
+    return score
 
 
 def add_quiz(quizzes):
@@ -183,9 +183,20 @@ def show_quiz_list(quizzes):
         print(f"{number}. {quiz.question}")
     print("-" * 40)
 
+
+def show_best_score(best_score):
+    """최고 점수를 출력한다."""
+    if best_score is None:
+        print("\n🏆 최고 점수: 기록이 없습니다. 먼저 퀴즈를 풀어주세요.")
+        return
+    
+    print(f"\n🏆 최고 점수: {best_score}점")
+
+
 def main():
     """프로그램 전체 흐름: 메뉴 → 선택 → 실행을 반복한다."""
     quizzes = get_default_quizzes()
+    best_score = None
     print(f"📂 기본 퀴즈 {len(quizzes)}개를 불러왔습니다.")
 
     while True:
@@ -193,13 +204,18 @@ def main():
         choice = get_number("선택: ", 1, 5)
 
         if choice == 1:
-            play_quiz(quizzes)
+           score = play_quiz(quizzes)
+           if score is not None:
+                if best_score is None or score > best_score:
+                    best_score = score
+                    print("🎉 새로운 최고 점수입니다!")
+                
         elif choice == 2:
             add_quiz(quizzes)
         elif choice == 3:
             show_quiz_list(quizzes)
         elif choice == 4:
-            print("🏆 점수 확인 (준비 중)")
+            show_best_score(best_score)
         elif choice == 5:
             print("👋 게임을 종료합니다. 다음에 또 만나요!")
             break
