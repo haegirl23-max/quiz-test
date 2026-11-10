@@ -1,5 +1,4 @@
-__pycache__/
-  *.pyc
-  .vscode/
-  .vscode/
-state.json
+   __pycache__/
+   *.pyc
+   .vscode/
+   state.json
