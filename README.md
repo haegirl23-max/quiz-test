@@ -404,9 +404,17 @@ python3 main.py
 
 ## Git 실습 기록
 ### 커밋 기록 (`git --no-pager log --oneline --graph`)
-의미 있는 커밋 22개와 두 번의 브랜치 병합 기록입니다. (보너스 병합 시점 기준)
+총 **26개 커밋**과 **두 번의 브랜치 병합** 기록입니다. (이 README를 반영하기 직전 기준)
 ```
-*   ffa0a63 (HEAD -> main, origin/main, origin/HEAD) Merge: 보너스 과제 병합
+hyejin@localhost:~/codyssey/quiz-game$ git rev-list --count HEAD
+26
+```
+```
+* f9f7d25 (HEAD -> main, origin/main, origin/HEAD) Docs: 평가 피드백 반영 (실행 로그, Git 규칙, 설계·확장성·백업·변경 가이드)
+* 1bd618b Feat: state.json 자동 백업 및 손상 시 복구 기능 추가
+* 73e68aa Docs: README 공백 제거 예시 수정
+* fa7236f Docs: 최종 git log 화면 갱신
+*   ffa0a63 Merge: 보너스 과제 병합
 |\
 | * 41639c2 (origin/feature/bonus, feature/bonus) Feat: 보너스 과제 구현 및 실행 화면 추가
 | * 592df59 Feat: 보너스 과제 구현 (랜덤 출제, 문제 수 선택, 힌트, 퀴즈 삭제, 점수 기록)
@@ -433,6 +441,8 @@ python3 main.py
 * 9e2bb6e Fix: README 파일명 수정 및 .vscode 제외
 * 38eb257 chore: 프로젝트 초기 설정
 ```
+
+아래 캡처는 보너스 병합 직후(`ffa0a63`) 화면입니다.
 
 ![git log --oneline --graph 실행 화면](docs/screenshots/git_log.png)
 
